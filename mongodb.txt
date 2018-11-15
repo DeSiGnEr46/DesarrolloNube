@@ -1,0 +1,37 @@
+person {
+	'_id' : id,
+	'firstname' : string,
+	'surname' : string,
+	'created' : datetime,
+	'email' : string,
+	'vignettes' : [id, id2, id3]
+}
+	
+vignette {
+	'_id' : id,
+	'numberofpages' : x,
+	'pages': [ 
+		{ 
+			'id' : id,
+			'url': url
+		},
+		{ 
+			'id' : id2,
+			'url': url2
+		}
+	]
+	'title': string,
+	'dateCreated': datetime,
+	'lastUpdate': datetime,
+	'likes': number,
+	'tags': [tag, tag2, tag3],
+	'private': boolean,
+	'comments': [id1, id2, id3]
+}
+
+comment {
+	'_id' : id,
+	'author': id,
+	'date': datetime,
+	'vignette': vignetteID
+}
