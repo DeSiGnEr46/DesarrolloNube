@@ -75,7 +75,7 @@ else:
 # Mongo configuration
 # If using mongolab, the connection URI is available from the mongolab control
 # panel. If self-hosting on compute engine, replace the values below.
-MONGO_USER = ''
-MONGO_PASSWORD = ''
+MONGO_USER = 'group'
+MONGO_PASSWORD = 'cloud1'
 MONGO_URI = \
     'mongodb://'+MONGO_USER+':'+MONGO_PASSWORD+'@ds153763.mlab.com:53763/desarrollo-apps-nube'
