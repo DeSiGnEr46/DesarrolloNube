@@ -17,7 +17,7 @@ import logging
 from flask import current_app, Flask, redirect, url_for
 
 
-def create_app(config, debug=False, testing=False, config_overrides=None):
+def create_app(config, debug=True, testing=False, config_overrides=None):
     app = Flask(__name__)
     app.config.from_object(config)
 
@@ -39,6 +39,13 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Register the Bookshelf CRUD blueprint.
     from .crud import crud
     app.register_blueprint(crud, url_prefix='/books')
+
+    from .user import user
+    app.register_blueprint(user, url_prefix='/user')
+
+    @app.route('/login')
+    def login_index():
+        return redirect(url_for('user.login_foo'))
 
     # Add a default root route.
     @app.route("/")

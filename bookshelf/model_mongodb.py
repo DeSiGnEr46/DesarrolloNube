@@ -88,6 +88,49 @@ def delete_comic(id):
 
 ## ENDS COMICS
 
+
+## START USERS 
+
+## not sure if users need list function. maybe for admins, but we dont need admins
+# [START list]
+def list_user(limit=10, cursor=None):
+    cursor = int(cursor) if cursor else 0
+
+    results = mongo.db.users.find(skip=cursor, limit=10).sort('name')
+    users = builtin_list(map(from_mongo, results))
+
+    next_page = cursor + limit if len(users) == limit else None
+    return (users, next_page)
+# [END list]
+
+
+# [START read]
+def read_user(id):
+    result = mongo.db.users.find_one({'_id': _id(id)})
+    return from_mongo(result)
+# [END read]
+
+
+# [START create]
+def create_user(data):
+    result = mongo.db.users.insert_one(data)
+    return read_user(result.inserted_id)
+# [END create]
+
+
+# [START update]
+def update_user(data, id):
+    mongo.db.users.replace_one({'_id': _id(id)}, data)
+    return read_user(id)
+# [END update]
+
+
+def delete_user(id):
+    mongo.db.users.delete_one({'_id': _id(id)})
+
+## ENDS COMICS
+
+
 # [START list]
 def list(limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0

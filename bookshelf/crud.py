@@ -27,11 +27,16 @@ def list():
         token = token.encode('utf-8')
 
     books, next_page_token = get_model().list_comic(cursor=token)
+    
+    # experimenting
+    users, next_page_token2 = get_model().list_user(cursor=token)
 
     return render_template(
         "list.html",
         books=books,
-        next_page_token=next_page_token)
+        users=users,
+        next_page_token=next_page_token,
+        next_page_token2=next_page_token2)
 # [END list]
 
 
@@ -74,3 +79,4 @@ def edit(id):
 def delete(id):
     get_model().delete_comic(id)
     return redirect(url_for('.list'))
+
