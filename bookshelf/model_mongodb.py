@@ -88,6 +88,43 @@ def delete_comic(id):
 
 ## ENDS COMICS
 
+## START PAGES
+
+# [START LIST]
+def list_pages(comic_id, limit=10, cursor=None):
+    cursor = int(cursor) if cursor else 0
+
+    results = mongo.db.pages.find({'comic_id': comic_id}).sort('order',-1)
+
+    pages = builtin_list(map(from_mongo, results))
+
+    print("pages")
+    for page in results:
+        print(str(page)+'\n')
+
+    next_page = cursor + limit if len(pages) == limit else None
+    return (pages, next_page)
+# [END LIST]
+
+# [START READ]
+def read_page(comic_id,page_id):
+    result = mongo.db.pages.find_one({'_id': _id(page_id)})
+    return from_mongo(result)
+
+# [END READ]
+
+# [START CONTIGUOS]
+def contiguos_page(comic_id,page_id):
+    pages,cursor = list_pages(comic_id)
+    pages.reverse()
+    page = from_mongo(mongo.db.pages.find_one({'_id': _id(page_id)}))
+    next = pages[int(page['order'])] if int(page['order'])<len(pages) else None
+    prev = pages[int(page['order'])-2] if (int(page['order'])-2)>-1 else None
+    return (next,prev,pages)
+
+# [END CONTIGUOS]
+
+## END PAGES
 
 ## START USERS 
 

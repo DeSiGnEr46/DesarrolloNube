@@ -43,8 +43,19 @@ def list():
 @crud.route('/<id>')
 def view(id):
     book = get_model().read_comic(id)
-    return render_template("view.html", book=book)
+    pages, next_page_token = get_model().list_pages(id)
+        
+    return render_template("view.html", book=book, pages=pages)
 
+@crud.route('/<comic_id>/<page_id>')
+def view_page(comic_id,page_id):
+    page = get_model().read_page(comic_id,page_id)
+    next, prev, pages = get_model().contiguos_page(comic_id,page_id) 
+    if(next):
+        next["_id"] = next["id"]
+    if(prev):
+        prev["_id"] = prev["id"]
+    return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages)
 
 # [START add]
 @crud.route('/add', methods=['GET', 'POST'])

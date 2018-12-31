@@ -43,6 +43,15 @@
     <h5 class="book-author">By {{book.author|default('Unknown', True)}}</h5>
     <p class="book-description">{{book.description}}</p>
   </div>
+  <div class="page-list">
+    {% for page in pages %}
+    <div>  
+      <a href="/books/{{book.id}}/{{page.id}}">Page {{page.order}}</a> 
+    </div>
+    {% else %}
+      No pages found
+    {% endfor %}
+  </div>
 </div>
 
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+<script type="text/javascript" src={{ url_for('static', filename='js/jquery.js') }}></script>
+    <script type="text/javascript" src={{ url_for('static', filename='js/turn_page.js') }}></script>
+
+{% endblock %}
+
+{% block content %}
+<meta id="my-data" data-next='{{next}}' data-prev='{{prev}}' data-book='{{book}}'>
+<div>
+    <select>
+        {% for pag in pages %}
+            {% if pag!=page %}
+                <option value="/books/{{book}}/{{pag.id}}" onclick=drop_select(value)>{{pag.order}}</option>
+            {% else %}
+            <option value="/books/{{book}}/{{pag.id}}" onclick=drop_select(value) selected>{{pag.order}}</option>
+            {%endif%}
+        {% endfor %}
+    </select>
+</div>
+<div>    
+    <img src={{page.url}}>
+</div>
+{% endblock %}
