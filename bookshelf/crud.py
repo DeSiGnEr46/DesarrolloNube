@@ -99,6 +99,7 @@ def add():
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
         data['tags'] = data['tags'].split(',')
+        data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
 
         book = get_model().create_comic(data)
 
