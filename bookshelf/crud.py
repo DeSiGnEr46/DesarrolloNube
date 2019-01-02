@@ -14,6 +14,9 @@
 
 from bookshelf import get_model
 from flask import Blueprint, redirect, render_template, request, url_for
+from werkzeug.utils import secure_filename
+from . import flickr_handler
+import datetime
 
 
 crud = Blueprint('crud', __name__)
@@ -56,6 +59,41 @@ def view_page(comic_id,page_id):
     if(prev):
         prev["_id"] = prev["id"]
     return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages)
+
+
+ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg'])
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# [START new_page]
+@crud.route('<id>/new_page', methods=['GET', 'POST'])
+def new_page(id):
+    book = get_model().read_comic(id)
+
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        data['comic_id'] = id
+        data['date'] = datetime.datetime.now().strftime("%d/%m/%Y")
+        
+        if 'url' not in request.files:
+            flash('No file part')
+            return render_template("new_page.html", action="New", book=book)
+        img_path = request.files['url']    
+        if img_path.filename == '':
+            flash('No selected file')
+            return render_template("new_page.html", action="New", book=book)
+        if img_path and allowed_file(img_path.filename):
+            filename = secure_filename(img_path.filename)
+            img_url = flickr_handler.upload_img(filename)
+            data['url'] = img_url
+            get_model().create_page(data)
+            return redirect(url_for('.view', id=id))
+
+
+    return render_template("new_page.html", action="New", book=book)
+# [END new_page]
 
 # [START add]
 @crud.route('/add', methods=['GET', 'POST'])
