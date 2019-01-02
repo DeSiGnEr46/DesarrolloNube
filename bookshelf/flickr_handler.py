@@ -4,7 +4,7 @@ import xml
 key = u'a4b698792ceedf048aa579118b4d7ef5'
 secret = u'c8f60618dab0ed74'
 username = '144402257@N07'
-flickr = flickrapi.FlickrAPI(key,secret, username=username)
+flickr = flickrapi.FlickrAPI(key,secret, token_cache_location='tests/')
 
 
 def upload_img(img_path):
