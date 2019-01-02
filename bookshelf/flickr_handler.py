@@ -12,7 +12,7 @@ def upload_img(img_path):
     id = flickr.upload(img_path, is_public='0')[0].text
     photo = flickr.photos.getSizes(photo_id=id)
     the_url = photo[0][-1].get('source')
-    return the_url
+    return id , the_url
 
 def delete_img(img_id):
     flickr.authenticate_via_browser(perms='delete')
@@ -21,3 +21,6 @@ def delete_img(img_id):
 def replace_img(img_path,img_id):
     flickr.authenticate_via_browser(perms='write')
     flickr.replace(filename=img_path,photo_id=img_id)
+    photo = flickr.photos.getSizes(photo_id=img_id)
+    the_url = photo[0][-1].get('source')
+    return img_id , the_url
