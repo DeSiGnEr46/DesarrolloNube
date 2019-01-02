@@ -90,6 +90,13 @@ def delete_comic(id):
 
 ## START PAGES
 
+# [START CREATE]
+def create_page(data):
+    result = mongo.db.pages.insert_one(data)
+    return read_comic(data['comic_id'])
+
+# [END CREATE]
+
 # [START LIST]
 def list_pages(comic_id, limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
@@ -105,6 +112,9 @@ def list_pages(comic_id, limit=10, cursor=None):
     next_page = cursor + limit if len(pages) == limit else None
     return (pages, next_page)
 # [END LIST]
+
+
+
 
 # [START READ]
 def read_page(comic_id,page_id):

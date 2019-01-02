@@ -77,16 +77,14 @@ def new_page(id):
         data['comic_id'] = id
         data['date'] = datetime.datetime.now().strftime("%d/%m/%Y")
         
-        if 'url' not in request.files:
-            flash('No file part')
-            return render_template("new_page.html", action="New", book=book)
-        img_path = request.files['url']    
-        if img_path.filename == '':
+        img_path = data['url']    
+        if img_path == '':
             flash('No selected file')
             return render_template("new_page.html", action="New", book=book)
-        if img_path and allowed_file(img_path.filename):
-            filename = secure_filename(img_path.filename)
-            img_url = flickr_handler.upload_img(filename)
+        if allowed_file(img_path):
+            filename = img_path
+            img_id, img_url = flickr_handler.upload_img(filename)
+            data['flickr_id'] = img_id
             data['url'] = img_url
             get_model().create_page(data)
             return redirect(url_for('.view', id=id))
