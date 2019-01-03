@@ -1,0 +1,25 @@
+{# [START form] #}
+{% extends "base.html" %}
+
+{# [START form] #}
+{% block content %}
+<h3>{{action}} page</h3>
+
+<!-- TODO: Upload an image to flickr and get the url -->
+<form method="post" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label for="order">Page number</label>
+        <input type="text" name="order" id="order" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="url">Upload image</label>
+        <input type="text" name="url" id="url" class="form-control"/>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+{% endblock %}
+{# [END form] #}
