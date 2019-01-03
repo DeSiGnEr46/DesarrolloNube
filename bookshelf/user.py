@@ -20,16 +20,12 @@ user = Blueprint('user', __name__)
 
 
 @user.route('/login')
-def login_foo():
+def login():
     return render_template("login.html")
 
-@user.route('/signup')
-def signup_foo():
-    return render_template("signup.html")
 
 # TBD ...
-'''
-@user.route('/user/<id>')
+@user.route('/<id>')
 def view_user(id):
     user = get_model().read_user(id)
     return render_template("user.html", user=user)
@@ -40,17 +36,16 @@ def view_user(id):
 def add_user():
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        data['tags'] = data['tags'].split(',')
 
-        book = get_model().create_user(data)
+        user = get_model().create_user(data)
 
-        return redirect(url_for('.user', id=user['id']))
+        return redirect(url_for('crud.list'))
 
-    return render_template("user_edit.html", action="Add_user", user={})
+    return render_template("user_form.html", action="Create new user", user={})
 # [END add]
 
 
-@user.route('/user/<id>/edit', methods=['GET', 'POST'])
+@user.route('/<id>/edit', methods=['GET', 'POST'])
 def edit_user(id):
     user = get_model().read_user(id)
 
@@ -59,7 +54,13 @@ def edit_user(id):
 
         user = get_model().update_user(data, id)
 
-        return redirect(url_for('.user', id=user['id']))
+        return redirect(url_for('crud.list'))
 
-    return render_template("user_edit.html", action="Edit", user=user)
-'''
+    return render_template("user_form.html", action="Edit user", user=user)
+
+
+@user.route('/<id>/delete')
+def delete(id):
+    get_model().delete_user(id)
+    return redirect(url_for('crud.list'))
+

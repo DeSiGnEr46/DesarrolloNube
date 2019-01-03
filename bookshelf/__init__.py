@@ -45,7 +45,7 @@ def create_app(config, debug=True, testing=False, config_overrides=None):
 
     @app.route('/login')
     def login_index():
-        return redirect(url_for('user.login_foo'))
+        return redirect(url_for('user.login'))
 
     # Add a default root route.
     @app.route("/")

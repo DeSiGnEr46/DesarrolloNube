@@ -49,21 +49,19 @@
 {% endif %}
 
 </br></br></br>
-<span>JUST EXPERIMENTING</span>
+<!--JUST EXPERIMENTING
 {% for user in users %}
 <div class="media">
   <a href="/user/{{user.id}}">
-    <div class="media-left">
-      <img src="http://placekitten.com/g/128/192">
-    </div>
     <div class="media-body">
       <h4>{{ user.name }}</h4>
+      <span>{{ user.id }}</span>
     </div>
   </a>
 </div>
 {% else %}
 <p>No users found</p>
-{% endfor %}
+{% endfor %}-->
 
 {% if next_page_token2 %}
 <nav>
