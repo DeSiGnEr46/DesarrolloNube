@@ -132,5 +132,16 @@ def delete(id):
 @crud.route('/search', methods=['POST'])
 def search():
     cadena = request.form['chain']
-    print(cadena)
-    return redirect(url_for('crud.list'))
+    
+    #Make the requests
+    users = get_model().find_user_name(cadena)
+    print(users)
+    authors = get_model().search_author(cadena)
+    print(authors)
+    titles = get_model().search_title(cadena)
+    print(titles)
+    tags = get_model().search_tags(cadena)
+    print(tags)
+
+    #return redirect(url_for('.list'))
+    return render_template('search_results.html', users=users, authors=authors, titles=titles, tags=tags)

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>People</h3>
+
+{% for user in users %}
+<div class="media">
+  <div class="media-left">
+    <img src="http://placekitten.com/g/128/192">
+    <h4>{{user.name}}</h4>
+  </div>
+  </a>
+</div>
+{% else %}
+<p>No users found</p>
+{% endfor %}
+<hr>
+
+<h3>Authors</h3>
+{% for author in authors %}
+<div class="media">
+  <a href="/books/{{author.id}}">
+    <div class="media-left">
+      <img src="http://placekitten.com/g/128/192">
+    </div>
+    <div class="media-body">
+      <h6>{{author.author}}</h6>
+      <h6>{{author.title}}</h6>
+      <h6>{{author.publishedDate}}</h6>
+      <h6>{{author.price}}</h6>
+      <h6>{{author.tags}}</h6>
+    </div>
+  </a>
+</div>
+{% else %}
+<p>No authors found</p>
+{% endfor %}
+<hr>
+
+<h3>Titles</h3>
+{% for title in titles %}
+<div class="media">
+    <a href="/books/{{title.id}}">
+  <div class="media-left">
+    <img src="http://placekitten.com/g/128/192">
+  </div>
+  <div class="media-body">
+    <h6>{{title.title}}</h6>
+    <h6>{{title.author}}</h6>
+    <h6>{{title.publishedDate}}</h6>
+    <h6>{{title.price}}</h6>
+    <h6>{{title.tags}}</h6>
+  </div>
+  </a>
+</div>
+{% else %}
+<p>No titles found</p>
+{% endfor %}
+<hr>
+
+<h3>Tags</h3>
+{% for tag in tags %}
+<div class="media">
+  <a href="/books/{{tag.id}}">
+    <div class="media-left">
+      <img src="http://placekitten.com/g/128/192">
+    </div>
+    <div class="media-body">
+      <h6>{{tag.title}}</h6>
+      <h6>{{tag.author}}</h6>
+      <h6>{{tag.tags}}</h6>
+    </div>
+  </a>
+</div>
+{% else %}
+<p>No tags found</p>
+{% endfor %}
+<hr>
+{% endblock %}

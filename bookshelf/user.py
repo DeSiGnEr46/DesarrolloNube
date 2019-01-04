@@ -13,13 +13,17 @@
 # limitations under the License.
 
 from bookshelf import get_model, cryptography
-from flask import Blueprint, redirect, render_template, request, url_for, flash
+from flask import Blueprint, redirect, render_template, request, url_for, flash, session
 from wtforms import Form, TextField, PasswordField, validators, StringField, SubmitField
 import os
 from bson.objectid import ObjectId
 
 user = Blueprint('user', __name__)
 
+# Variable to check logged user
+log_user = None
+
+## Classes for the forms
 class LoginForm(Form):
     email = TextField('Email:', validators=[validators.required()])
     password = PasswordField('Password:', validators=[validators.required()])
@@ -33,19 +37,67 @@ class RegisterForm(Form):
 class SearchForm(Form):
     chain = TextField('Chain:', validators=[validators.required()])
 
+## [BEGIN]
+# Users log logic
+
+#Function called before accessing any protected function
+@user.before_request
+def before_request():
+    global log_user 
+    log_user = None
+
+    if 'user' in session:
+        log_user = session['user']
+    else:
+        redirect(url_for("crud.list"))
+
+    
+    
+
 @user.route('/login', methods=['GET','POST'])
 def login():
+    global log_user
+    
+    if log_user is not None:
+        return redirect(url_for("crud.list"))
+
     form = LoginForm(request.form)
  
     if request.method == 'POST':
         if form.validate():
             # Log valid
-            print("Log Ok")
+            result = get_model().find_user_email(request.form['email'])
+            if result is None:
+                flash("Email is not valid. ")
+            
+            elif not cryptography.check_pass(request.form['password'], result['password']):
+                flash("Password is incorrect")
+            
+            else:
+                session['user'] = request.form['email']
+                print(session)
+                print(session['user'])
+                return redirect(url_for('crud.list'))
+
         else:
             flash('All the form fields are required. ')
  
     return render_template('login.html', form=form)
 
+# Logout function
+@user.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('crud.list'))
+
+# Check if the user is logged in
+@user.route('/cheksess')
+def check_session():
+    if 'user' in session:
+        return session['user']
+    return None
+
+# Register function
 @user.route('/signup', methods=['GET','POST'])
 def signup():
     form = RegisterForm(request.form)
@@ -55,7 +107,6 @@ def signup():
             # Register successfully
             # We add the user to the database
             data = {}
-            data['_id'] = ObjectId(os.urandom(12))
             data['name'] = request.form['name']
             data['email'] = request.form['email']
             data['password'] = cryptography.encrypt_pass(request.form['pass1'])
@@ -67,7 +118,8 @@ def signup():
 
     return render_template('signup.html', form=form)
 
-# TBD ...
+
+## [END Users Log Logic]
 @user.route('/<id>')
 def view_user(id):
     user = get_model().read_user(id)

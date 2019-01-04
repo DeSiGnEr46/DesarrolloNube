@@ -86,6 +86,21 @@ def update_comic(data, id):
 def delete_comic(id):
     mongo.db.comics.delete_one({'_id': _id(id)})
 
+def search_tags(chain):
+    result = mongo.db.comics.find({'tags': chain}, limit=10)
+    result = builtin_list(map(from_mongo, result))
+    return result
+
+def search_author(chain):
+    result = mongo.db.comics.find({'author': chain}, limit=10)
+    result = builtin_list(map(from_mongo, result))
+    return result
+
+def search_title(chain):
+    result = mongo.db.comics.find({'title': chain}, limit=10)
+    result = builtin_list(map(from_mongo, result))
+    return result
+
 ## ENDS COMICS
 
 ## START PAGES
@@ -175,7 +190,16 @@ def update_user(data, id):
 def delete_user(id):
     mongo.db.users.delete_one({'_id': _id(id)})
 
-## ENDS COMICS
+def find_user_email(email):
+    result = mongo.db.users.find_one({'email': email})
+    return from_mongo(result)
+
+def find_user_name(name):
+    result = mongo.db.users.find({'name': name}, limit=10)
+    result = builtin_list(map(from_mongo, result))
+    return result
+
+## ENDS USERS
 
 
 # [START list]

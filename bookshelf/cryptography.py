@@ -22,3 +22,6 @@ def encrypt_pass(chain):
 
 def decrypt_pass(chain):
     return f.decrypt(chain)
+
+def check_pass(pass1, encryptpass):
+    return decrypt_pass(encryptpass) == bytes(pass1, 'utf-8')
