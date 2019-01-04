@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from bookshelf import get_model
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, redirect, render_template, request, url_for, flash
 from werkzeug.utils import secure_filename
 from . import flickr_handler
 import datetime
@@ -128,3 +128,9 @@ def delete(id):
     get_model().delete_comic(id)
     return redirect(url_for('.list'))
 
+
+@crud.route('/search', methods=['POST'])
+def search():
+    cadena = request.form['chain']
+    print(cadena)
+    return redirect(url_for('crud.list'))

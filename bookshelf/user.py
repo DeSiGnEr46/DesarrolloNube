@@ -12,17 +12,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bookshelf import get_model
-from flask import Blueprint, redirect, render_template, request, url_for
-
+from bookshelf import get_model, cryptography
+from flask import Blueprint, redirect, render_template, request, url_for, flash
+from wtforms import Form, TextField, PasswordField, validators, StringField, SubmitField
+import os
+from bson.objectid import ObjectId
 
 user = Blueprint('user', __name__)
 
+class LoginForm(Form):
+    email = TextField('Email:', validators=[validators.required()])
+    password = PasswordField('Password:', validators=[validators.required()])
 
-@user.route('/login')
+class RegisterForm(Form):
+    name = TextField('Name:', validators=[validators.required()])
+    email = TextField('Email:', validators=[validators.required()])
+    pass1 = PasswordField('Password:', validators=[validators.required()])
+    pass2 = PasswordField('Repass:', validators=[validators.required()])
+
+class SearchForm(Form):
+    chain = TextField('Chain:', validators=[validators.required()])
+
+@user.route('/login', methods=['GET','POST'])
 def login():
-    return render_template("login.html")
+    form = LoginForm(request.form)
+ 
+    if request.method == 'POST':
+        if form.validate():
+            # Log valid
+            print("Log Ok")
+        else:
+            flash('All the form fields are required. ')
+ 
+    return render_template('login.html', form=form)
 
+@user.route('/signup', methods=['GET','POST'])
+def signup():
+    form = RegisterForm(request.form)
+ 
+    if request.method == 'POST':
+        if form.validate():
+            # Register successfully
+            # We add the user to the database
+            data = {}
+            data['_id'] = ObjectId(os.urandom(12))
+            data['name'] = request.form['name']
+            data['email'] = request.form['email']
+            data['password'] = cryptography.encrypt_pass(request.form['pass1'])
+            result = get_model().create_user(data)
+            print(result)
+            return redirect(url_for('user.login'))
+        else:
+            flash('All the form fields are required.')
+
+    return render_template('signup.html', form=form)
 
 # TBD ...
 @user.route('/<id>')

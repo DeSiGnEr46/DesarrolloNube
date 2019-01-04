@@ -3,22 +3,47 @@
 
 <div class="container border" style="width: 550px;">
     <div class="continer log-form" style="padding:5px;">
-            <form>
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
-                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleInputPassword1">Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                    Don't have an account? <a href="/user/signup">SignUp!</a>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                    Don't have an account?2 <a href="/user/add">SignUp!2</a>
-                </form>
+        <form action="/user/login" method="POST" role="form">
+            {{ form.csrf }}
+            <div class="form-group">
+                <label>Email address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter password">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            Don't have an account? <a href="/user/signup">SignUp!</a>
+        </form>
+        <hr>
+        <strong>Log in with your Google account </strong> 
+        <div class="g-signin2" style="padding:2px;" data-onsuccess="onSignIn"></div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for message in messages %}
+        {% if "All" in message[1]: %}
+        <div class="alert alert-warning">
+            <strong> Warning </strong> {{ message[1] }}</div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
     </div>
 </div>
+
+<script>
+    function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile();
+  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  console.log('Name: ' + profile.getName());
+  console.log('Image URL: ' + profile.getImageUrl());
+  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+}
+
+</script>
+
 
 {% endblock content %}
