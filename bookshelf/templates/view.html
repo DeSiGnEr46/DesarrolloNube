@@ -28,36 +28,39 @@
     {% endfor %}
   {% endif %}
 {% endwith %}
-<div class="btn-group">
-<!-- logged user -->
-  {% if isPublisher == True %}
-    <a href="/books/{{book.id}}/edit" class="btn btn-primary btn-sm">
-      <i class="glyphicon glyphicon-edit"></i>
-      Edit book
-    </a>
-    <a href="/books/{{book.id}}/delete" class="btn btn-danger btn-sm">
-      <i class="glyphicon glyphicon-trash"></i>
-      Delete book
-    </a>
-  {% endif %}
-  {% if isPublisher == False %}
-    {% if showLike %}
-      <div class="like-div">
-        <a href="/books/{{book.id}}/like" class="like" title="Like this book"></a>
-      </div>
-    {% else %}
-      <div class="like-div">
-        <a href="/books/{{book.id}}/unlike" class="unlike" title="Unlike"></a>
-      </div>
-    {% endif %}
-    {% if bought == False %}
-      <a href="/books/{{book.id}}/buy" class="btn btn-success btn-sm">
-        <i class="glyphicon glyphicon-usd"></i>
-        Buy this book
+{% if user_info['log'] == True %}
+  <div class="btn-group">
+    {% if isPublisher == True %}
+      <a href="/books/{{book.id}}/edit" class="btn btn-primary btn-sm">
+        <i class="glyphicon glyphicon-edit"></i>
+        Edit book
+      </a>
+      <a href="/books/{{book.id}}/delete" class="btn btn-danger btn-sm">
+        <i class="glyphicon glyphicon-trash"></i>
+        Delete book
       </a>
     {% endif %}
-  {% endif %}
-</div>
+    {% if isPublisher == False %}
+      {% if showLike %}
+        <div class="like-div">
+          <a href="/books/{{book.id}}/like" class="like" title="Like this book"></a>
+        </div>
+      {% else %}
+        <div class="like-div">
+          <a href="/books/{{book.id}}/unlike" class="unlike" title="Unlike"></a>
+        </div>
+      {% endif %}
+      {% if bought == False %}
+        <a href="/books/{{book.id}}/buy" class="btn btn-success btn-sm">
+          <i class="glyphicon glyphicon-usd"></i>
+          Buy this book
+        </a>
+      {% endif %}
+    {% endif %}
+  </div>
+{% else %}
+  <p style="text-align: center">To read this book you have to log in</p>
+{% endif %}
 
 <div class="media">
   <div class="media-left">

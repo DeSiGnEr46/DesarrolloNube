@@ -25,10 +25,12 @@
   <link href="../static/css/style.css" rel="stylesheet">
 
 <h3>Books</h3>
-<a href="/books/add" class="btn btn-success btn-sm">
-  <i class="glyphicon glyphicon-plus"></i>
-  Add book
-</a>
+{% if user_info['log'] == True %}
+  <a href="/books/add" class="btn btn-success btn-sm">
+    <i class="glyphicon glyphicon-plus"></i>
+    Add book
+  </a>
+{% endif %}
 
 {% for book in books %}
 <div class="media card">

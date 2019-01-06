@@ -23,7 +23,7 @@ from mhlib import isnumeric
 
 crud = Blueprint('crud', __name__)
 
-TEMP_USER_ID = '5c314f92602d682310ff9ecd'
+#TEMP_USER_ID = '5c314f92602d682310ff9ecd'
 #TEMP_USER_ID = '5c2a7709b9be89189c0a51e6'
 
 # [START list]
@@ -63,13 +63,12 @@ def view(id):
     
     publishedBy = get_model().read_user(book['publishedBy'])
     book['publishedBy'] = publishedBy
-    
-    ## get current user if any
-    #if loggedin == True:
-    bought = get_model().is_bought(TEMP_USER_ID, id)
-    like = get_model().read_like(TEMP_USER_ID, id)
-    showLike = True if like is None else False
-    isPublisher = True if str(publishedBy['_id']) == str(TEMP_USER_ID) else False
+    bought, showLike, isPublisher = False, False, False
+    if bookshelf.user.user_info['log'] == True:
+        bought = get_model().is_bought(bookshelf.user.user_info['id'], id)
+        like = get_model().read_like(bookshelf.user.user_info['id'], id)
+        showLike = True if like is None else False
+        isPublisher = True if str(publishedBy['_id']) == str(bookshelf.user.user_info['id']) else False
     
     return render_template("view.html",
         book=book,
@@ -131,7 +130,7 @@ def add():
         data['tags'] = data['tags'].split(',')
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
         data['likes'] = 0
-        data['publishedBy'] = TEMP_USER_ID
+        data['publishedBy'] = bookshelf.user.user_info['id']
         data['price'] = abs(float(data['price'])) if isnumeric(data['price']) == True else 0
 
         book = get_model().create_comic(data)
@@ -182,19 +181,19 @@ def search():
 
 @crud.route('/<id>/like')
 def like(id):
-    like = get_model().like(TEMP_USER_ID, id)
+    like = get_model().like(bookshelf.user.user_info['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/unlike')
 def unlike(id):
-    get_model().unlike(TEMP_USER_ID, id)
+    get_model().unlike(bookshelf.user.user_info['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/buy')
 def buy(id):
-    if get_model().buy(TEMP_USER_ID, id) == False:
+    if get_model().buy(bookshelf.user.user_info['id'], id) == False:
         flash('Not enough money')
     return redirect(url_for('.view', id=id))
 
