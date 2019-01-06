@@ -28,6 +28,9 @@
     {% endfor %}
   {% endif %}
 {% endwith %}
+
+{% set price = book.price | int %}
+
 {% if user_info['log'] == True %}
   <div class="btn-group">
     {% if isPublisher == True %}
@@ -58,8 +61,6 @@
       {% endif %}
     {% endif %}
   </div>
-{% else %}
-  <p style="text-align: center">To read this book you have to log in</p>
 {% endif %}
 
 <div class="media">
@@ -67,34 +68,55 @@
     <img class="book-image cover" src="{{book.cover}}">
   </div>
   <div class="media-body">
-    <h4 class="book-title">
-      {{book.title}}<br/>
-      <small>{{book.publishedDate}}</small><br/>
-      <small>Published by {{book.publishedBy['name']}}</small>
-    </h4>
-    <h5 class="book-author">Written by {{book.author|default('Unknown', True)}}</h5>
-    {% if book.price is not none %}
-      <p><strong>Price: </strong>{{ book.price }}</p>
-    {% endif %}
-    {% if book.likes is not none and book.likes > 0 %}
-      <p>This book was liked <strong>{{ book.likes }} times!</strong></p>
-    {% endif %}
-    <p class="book-description">{{book.description}}</p>
-  </div>
-  <div class="page-list">
-    {% for page in pages %}
-    <div>
-      <a href="/books/{{book.id}}/{{page.id}}">Page {{page.order}}</a> 
-    </div>
+    {% if showPages == False %}
+      <h4 class="book-title">
+        {{book.title}}<br/>
+        <small>{{book.publishedDate}}</small><br/>
+        <small>Published by {{book.publishedBy['name']}}</small>
+      </h4>
+      <h5 class="book-author">Written by {{book.author|default('Unknown', True)}}</h5>
+      {% if book.price is not none and price > 0 %}
+        <p><strong>Price: </strong>{{ book.price }}</p>
+      {% endif %}
+      {% if book.likes is not none and book.likes > 0 %}
+        <p>This book was liked <strong>{{ book.likes }} times!</strong></p>
+      {% endif %}
+      <p class="book-description">{{book.description}}</p>
+      <div>
+        <a href="/books/{{book.id}}/pages" class="btn btn-primary btn-sm">
+          Show Pages
+        </a>
+      </div>
     {% else %}
-      No pages found
-    {% endfor %}
-  </div>
-
-  <div class="btn btn-primary btn-sm">
-    <a href="/books/{{book.id}}/new_page" class="btn btn-primary btn-sm">
-      New Page
-    </a>
+      <div class="btn-group">
+        {% if isPublisher == True %}
+          <a href="/books/{{book.id}}/new_page" class="btn btn-success btn-sm">
+            <i class="glyphicon glyphicon-plus"></i>
+            New Page
+          </a>
+        {% endif %}
+        <a href="/books/{{book.id}}" class="btn btn-primary btn-sm">
+          Show Info
+        </a>
+      </div>
+      {% if user_info['log'] == True or price == 0 %}
+        {% isPublisher == True or bought == True %}
+          <div class="page-list" style="margin-top: 10px;">
+            {% for page in pages %}
+            <div>
+              <a href="/books/{{book.id}}/{{page.id}}">Page {{page.order}}</a> 
+            </div>
+            {% else %}
+              No pages found
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="text-align: center; margin: 30px">To read this book you have to buy it</p>
+        {% endif %}
+      {% else %}
+        <p style="text-align: center; margin: 30px">To read this book you have to log in</p>
+      {% endif %}
+    {% endif %}
   </div>
 </div>
 

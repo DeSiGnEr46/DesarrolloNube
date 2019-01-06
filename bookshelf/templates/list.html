@@ -57,28 +57,5 @@
 {% endif %}
 
 </br></br></br>
-JUST EXPERIMENTING
-{% for user in users %}
-<div class="media">
-  <a href="/user/{{user.id}}">
-    <div class="media-body">
-      <h4>{{ user.name }}</h4>
-      <span>{{ user.id }}</span>
-    </div>
-  </a>
-</div>
-{% else %}
-<p>No users found</p>
-{% endfor %}
-</br></br></br>
-
-{% if next_page_token2 %}
-<nav>
-  <ul class="pager">
-    <li><a href="?page_token={{next_page_token2}}">More</a></li>
-  </ul>
-</nav>
-</br></br></br>
-{% endif %}
 
 {% endblock %}

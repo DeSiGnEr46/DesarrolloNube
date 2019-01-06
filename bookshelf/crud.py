@@ -19,12 +19,8 @@ from . import flickr_handler
 import datetime
 import bookshelf.user
 from bson.objectid import ObjectId
-#from mhlib import isnumeric
 
 crud = Blueprint('crud', __name__)
-
-#TEMP_USER_ID = '5c314f92602d682310ff9ecd'
-#TEMP_USER_ID = '5c2a7709b9be89189c0a51e6'
 
 # [START list]
 @crud.route("/")
@@ -40,17 +36,12 @@ def list():
         cover = get_model().get_cover(book['id'])
         book = tuple((book, cover))
         books_with_covers.append(book)
-    
-    # experimenting
-    users, next_page_token2 = get_model().list_user(cursor=token)
 
     #print(bookshelf.user.user_info)
     return render_template(
         "list.html",
         books=books_with_covers,
-        users=users,
         next_page_token=next_page_token,
-        next_page_token2=next_page_token2,
         user_info=bookshelf.user.user_info) 
 # [END list]
 
@@ -60,6 +51,9 @@ def view(id):
     book = get_model().read_comic(id)
     pages, next_page_token = get_model().list_pages(id)
     book['cover'] = pages[0]['url'] if pages else 'http://placekitten.com/g/128/192'
+
+    showPages = request.args.get('showPages')
+    showPages = bool(showPages) if showPages is not None else False
     
     publishedBy = get_model().read_user(book['publishedBy'])
     book['publishedBy'] = publishedBy
@@ -76,7 +70,13 @@ def view(id):
         bought=bought,
         showLike=showLike,
         isPublisher=isPublisher,
+        showPages=showPages,
         user_info=bookshelf.user.user_info)
+
+
+@crud.route('/<id>/pages')
+def show_pages(id):
+    return redirect(url_for('.view', id=id, showPages=True))
 
 
 @crud.route('/<comic_id>/<page_id>')
@@ -150,7 +150,7 @@ def add():
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
         data['likes'] = 0
         data['publishedBy'] = bookshelf.user.user_info['id']
-        data['price'] = abs(float(data['price'])) #if isnumeric(data['price']) == True else 0
+        data['price'] = abs(float(data['price'])) if data['price'].isdigit() == True else 0
 
         book = get_model().create_comic(data)
 
