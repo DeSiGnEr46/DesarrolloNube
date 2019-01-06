@@ -11,7 +11,23 @@
 </div>
 <br/>
 <div class="btn-group">
-  <a href="/user/{{ user.id }}/edit" class="btn btn-primary btn-sm">
+  <a href="/user/{{ user.id }}/liked" class="btn btn-light btn-sm">
+    <i class="glyphicon glyphicon-heart" style="color: red;"></i>
+    Liked books
+  </a>
+  <a href="/user/{{ user.id }}/bought" class="btn btn-light btn-sm">
+    <i class="glyphicon glyphicon-usd"></i>
+    Bought books
+  </a>
+  <a href="/user/{{ user.id }}/published" class="btn btn-light btn-sm">
+    <i class="glyphicon glyphicon-list"></i>
+    Published books
+  </a>
+  <a href="/user/{{ user.id }}/sales" class="btn btn-light btn-sm">
+    <i class="glyphicon glyphicon-usd"></i>
+    Sales
+  </a>
+  <a href="/user/{{ user.id }}/edit" class="btn btn-warning btn-sm">
     <i class="glyphicon glyphicon-edit"></i>
     Edit user
   </a>
@@ -22,17 +38,89 @@
 </div>
 
 <br/>
-<div class="media">
-  <div class="form-group">
-    <label for="inputName" class="col-sm-3 control-label">Name</label>
-    <div class="col-sm-6">
-      <div class="media-body">
-        <h4 class="user-name">{{ user.name }}</h4>
+<div style="margin: 20px">
+  <div class="row">
+    <label class="col-md-4 control-label">Name</label>
+    <div><span>{{ user.name }}</span></div>
+  </div>
+  <div class="row">
+    <label class="col-md-4 control-label">Email</label>
+    <div><span>{{ user.email }}</span></div>
+  </div>
+  <div class="row">
+    <label class="col-md-4 control-label">Balance</label>
+    <div><span>{{ user.balance }}</span></div>
+  </div>
+</div>
+
+{% if list > 0 and list < 4 %}
+  {% for book in books %}
+    <div class="media card">
+      <a href="/books/{{book[0].id}}">
+        <div class="media-left">
+          <img class="cover" src="{{ book[1] }}">
+        </div>
+        <div class="media-body">
+          <h4>{{book[0].title}}</h4>
+          <p>{{book[0].author}}</p>
+        </div>
+      </a>
+    </div>
+    {% else %}
+      <p style="text-align: center; margin: 30px 0">No {% if list == '1' %}
+           liked
+         {% elif list == '2' %}
+           bought
+         {% elif list == '3' %}
+           published
+         {% endif %}
+         books found</p>
+  {% endfor %}
+{% endif %}
+
+{% if next_page_token %}
+<nav>
+  <ul class="pager">
+    <li><a href="?page_token={{next_page_token}}">More</a></li>
+  </ul>
+</nav>
+{% endif %}
+
+{% if list == 4 %}
+  <h3 style="text-align: center">Sales</h3>
+  {% for sale in sales %}
+    <div style="margin: 20px; padding: 5px 30px; background-color: rgb(248, 249, 250); border-radius: 3px;">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row">
+            <label class="col-md-4 control-label">Title</label>
+            <div><span>{{ sale.title }}</span></div>
+          </div>
+          <div class="row">
+            <label class="col-md-4 control-label">Buyer</label>
+            <div><span>{{ sale.buyer }}</span></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <label class="col-md-4 control-label">Date</label>
+            <div><span>{{ sale.date }}</span></div>
+          </div>
+          <div class="row">
+            <label class="col-md-4 control-label">Price</label>
+            <div><span>{{ sale.price }}</span></div>
+          </div>
+        </div>
       </div>
     </div>
-  <div class="form-group text-center">
-    <a class="btn btn-secondary" href ="/">Return</a>
-  </div>
+    {% else %}
+      <p style="text-align: center">No sales found</p>
+  {% endfor %}
+{% endif %}
+
+<div class="form-group text-center" style="margin: 20px 0 50px">
+  <a class="btn btn-secondary" href ="/">Return</a>
+</div>
 
 <script src="../static/js/jquery.js"></script>
 <script src="../static/js/bootstrap.min.js"></script>

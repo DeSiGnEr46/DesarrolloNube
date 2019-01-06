@@ -14,6 +14,8 @@
 
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
+import datetime
+from mhlib import isnumeric
 
 
 builtin_list = list
@@ -51,10 +53,28 @@ def init_app(app):
 ## START COMICS 
 
 # [START list]
-def list_comic(limit=10, cursor=None):
+def list_comic(limit=10, cursor=None, list=0, user_id=None):
     cursor = int(cursor) if cursor else 0
 
-    results = mongo.db.comics.find(skip=cursor, limit=10).sort('title')
+    results = None
+    list = list if list == 0 else int(list)
+    if list == 0:
+        results = mongo.db.comics.find(skip=cursor, limit=10).sort('title')
+    elif list == 1:
+        likes = list_likes(user_id)
+        likes_comic_ids = []
+        for like in likes:
+            likes_comic_ids.append(like['comic_id'])
+        results = mongo.db.comics.find({"_id" : {"$in" : likes_comic_ids}});
+    elif list == 2:
+        payments = list_bought_comics(user_id)
+        payments_comic_ids = []
+        for payment in payments:
+            payments_comic_ids.append(payment['comic_id'])
+        results = mongo.db.comics.find({"_id" : {"$in" : payments_comic_ids}});
+    else:
+        results = mongo.db.comics.find({'publishedBy': user_id}, skip=cursor, limit=10).sort('title')
+
     comics = builtin_list(map(from_mongo, results))
 
     next_page = cursor + limit if len(comics) == limit else None
@@ -78,13 +98,21 @@ def create_comic(data):
 
 # [START update]
 def update_comic(data, id):
-    mongo.db.comics.replace_one({'_id': _id(id)}, data)
+    mongo.db.comics.update_one({'_id': _id(id)},
+        {'$set': {
+            'title': data['title'],
+            'author': data['author'],
+            'price': abs(float(data['price'])) if isnumeric(data['price']) == True else 0,
+            'tags': data['tags']
+        }})
     return read_comic(id)
 # [END update]
 
 
 def delete_comic(id):
     mongo.db.comics.delete_one({'_id': _id(id)})
+    mongo.db.likes.remove({'comic_id': _id(id)})
+    mongo.db.payments.remove({'comic_id': _id(id)})
 
 def search_tags(chain):
     result = mongo.db.comics.find({'tags': chain}, limit=10)
@@ -116,7 +144,7 @@ def create_page(data):
 def list_pages(comic_id, limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
 
-    results = mongo.db.pages.find({'comic_id': comic_id}).sort('order',-1)
+    results = mongo.db.pages.find({'comic_id': comic_id}).sort('order',1)
 
     pages = builtin_list(map(from_mongo, results))
 
@@ -129,6 +157,12 @@ def list_pages(comic_id, limit=10, cursor=None):
 # [END LIST]
 
 
+# [START get cover]
+def get_cover(comic_id):
+    result = mongo.db.pages.find_one({'comic_id': comic_id})
+
+    return (result['url'] if result is not None else 'http://placekitten.com/g/128/192')
+# [END get cover]
 
 
 # [START READ]
@@ -182,7 +216,11 @@ def create_user(data):
 
 # [START update]
 def update_user(data, id):
-    mongo.db.users.replace_one({'_id': _id(id)}, data)
+    mongo.db.users.update_one({'_id': _id(id)},
+        {'$set': {
+            'name': data['name'],
+            'email': data['email']
+        }})
     return read_user(id)
 # [END update]
 
@@ -239,3 +277,93 @@ def delete(id):
     mongo.db.books.delete_one({'_id': _id(id)})
 
 ## END COMICS
+
+## START LIKES
+
+def list_likes(user_id, limit=10, cursor=None):
+    cursor = int(cursor) if cursor else 0
+    
+    results = mongo.db.likes.find({'user_id': _id(user_id)}, skip=cursor, limit=10)
+    likes = builtin_list(map(from_mongo, results))
+
+    return (likes)
+
+
+def read_like(user_id, comic_id):
+    result = mongo.db.likes.find_one({'user_id': _id(user_id), 'comic_id': _id(comic_id)})
+    return from_mongo(result)
+
+
+def like(user_id, comic_id):
+    comic = mongo.db.comics.find_one({'_id': _id(comic_id)})
+    user = mongo.db.users.find_one({'_id': _id(user_id)})
+    mongo.db.comics.update_one({'_id': _id(comic_id)}, {'$inc': {'likes': 1}})
+    data = {
+        'comic_id': comic['_id'],
+        'user_id': user['_id']
+        }
+    mongo.db.likes.insert_one(data)
+    
+    return read_like(user_id, comic_id)
+
+
+def unlike(user_id, comic_id):
+    mongo.db.likes.delete_one({'user_id': _id(user_id), 'comic_id': _id(comic_id)})
+    mongo.db.comics.update_one({'_id': _id(comic_id)}, {'$inc': {'likes': -1}})
+
+## END LIKES
+
+## START PAYMENTS
+
+def read_payment(id):
+    result = mongo.db.payments.find_one({'_id': _id(id)})
+    return from_mongo(result)
+
+
+def is_bought(user_id, comic_id):
+    return True if mongo.db.payments.find_one({'buyer_id': _id(user_id), 'comic_id': _id(comic_id)}) is not None else False
+
+
+def buy(user_id, comic_id):
+    user = mongo.db.users.find_one({'_id': _id(user_id)})
+    comic = mongo.db.comics.find_one({'_id': _id(comic_id)})
+    if float(user['balance']) < float(comic['price']):
+        return False
+    
+    data = {
+        'comic_id': comic['_id'],
+        'buyer_id': user['_id'],
+        'price': float(comic['price']),
+        'date': datetime.datetime.now().strftime("%d/%m/%Y")
+        }
+    
+    mongo.db.users.update_one({'_id': _id(user_id)}, {'$inc': {'balance': -float(comic['price'])}})
+    mongo.db.users.update_one({'_id': _id(comic['publishedBy'])}, {'$inc': {'balance': float(comic['price'])}})
+    
+    result = mongo.db.payments.insert_one(data)
+    return read(result.inserted_id)
+
+
+def list_bought_comics(user_id, limit=10, cursor=None):
+    cursor = int(cursor) if cursor else 0
+
+    results = mongo.db.payments.find({'buyer_id': _id(user_id)}, skip=cursor, limit=10).sort('date')
+    payments = builtin_list(map(from_mongo, results))
+
+    return (payments)
+
+def list_sold_comics(user_id, limit=10, cursor=None):
+    cursor = int(cursor) if cursor else 0
+    
+    results = mongo.db.comics.find({'publishedBy': user_id}, skip=cursor)
+    published_comics = builtin_list(map(from_mongo, results))
+    comic_ids = []
+    for comic in published_comics:
+        comic_ids.append(comic['_id'])
+    results = mongo.db.payments.find({'comic_id': {"$in" : comic_ids}}, skip=cursor, limit=10).sort('date')
+    payments = builtin_list(map(from_mongo, results))
+
+    return (payments)
+
+## END PAYMENTS
+

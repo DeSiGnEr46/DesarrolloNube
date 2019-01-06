@@ -18,8 +18,13 @@ from werkzeug.utils import secure_filename
 from . import flickr_handler
 import datetime
 import bookshelf.user
+from bson.objectid import ObjectId
+from mhlib import isnumeric
 
 crud = Blueprint('crud', __name__)
+
+TEMP_USER_ID = '5c314f92602d682310ff9ecd'
+#TEMP_USER_ID = '5c2a7709b9be89189c0a51e6'
 
 # [START list]
 @crud.route("/")
@@ -29,6 +34,12 @@ def list():
         token = token.encode('utf-8')
 
     books, next_page_token = get_model().list_comic(cursor=token)
+    books_with_covers = []
+    
+    for book in books:
+        cover = get_model().get_cover(book['id'])
+        book = tuple((book, cover))
+        books_with_covers.append(book)
     
     # experimenting
     users, next_page_token2 = get_model().list_user(cursor=token)
@@ -36,7 +47,7 @@ def list():
     #print(bookshelf.user.user_info)
     return render_template(
         "list.html",
-        books=books,
+        books=books_with_covers,
         users=users,
         next_page_token=next_page_token,
         next_page_token2=next_page_token2,
@@ -48,8 +59,26 @@ def list():
 def view(id):
     book = get_model().read_comic(id)
     pages, next_page_token = get_model().list_pages(id)
-        
-    return render_template("view.html", book=book, pages=pages, user_info=bookshelf.user.user_info)
+    book['cover'] = pages[0]['url'] if pages else 'http://placekitten.com/g/128/192'
+    
+    publishedBy = get_model().read_user(book['publishedBy'])
+    book['publishedBy'] = publishedBy
+    
+    ## get current user if any
+    #if loggedin == True:
+    bought = get_model().is_bought(TEMP_USER_ID, id)
+    like = get_model().read_like(TEMP_USER_ID, id)
+    showLike = True if like is None else False
+    isPublisher = True if str(publishedBy['_id']) == str(TEMP_USER_ID) else False
+    
+    return render_template("view.html",
+        book=book,
+        pages=pages,
+        bought=bought,
+        showLike=showLike,
+        isPublisher=isPublisher,
+        user_info=bookshelf.user.user_info)
+
 
 @crud.route('/<comic_id>/<page_id>')
 def view_page(comic_id,page_id):
@@ -101,6 +130,9 @@ def add():
         data = request.form.to_dict(flat=True)
         data['tags'] = data['tags'].split(',')
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
+        data['likes'] = 0
+        data['publishedBy'] = TEMP_USER_ID
+        data['price'] = abs(float(data['price'])) if isnumeric(data['price']) == True else 0
 
         book = get_model().create_comic(data)
 
@@ -146,3 +178,23 @@ def search():
 
     #return redirect(url_for('.list'))
     return render_template('search_results.html', users=users, authors=authors, titles=titles, tags=tags, user_info=bookshelf.user.user_info)
+
+
+@crud.route('/<id>/like')
+def like(id):
+    like = get_model().like(TEMP_USER_ID, id)
+    return redirect(url_for('.view', id=id))
+
+
+@crud.route('/<id>/unlike')
+def unlike(id):
+    get_model().unlike(TEMP_USER_ID, id)
+    return redirect(url_for('.view', id=id))
+
+
+@crud.route('/<id>/buy')
+def buy(id):
+    if get_model().buy(TEMP_USER_ID, id) == False:
+        flash('Not enough money')
+    return redirect(url_for('.view', id=id))
+

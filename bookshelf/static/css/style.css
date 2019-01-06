@@ -10,3 +10,92 @@
 .log-form {
     width: 450px;
 }
+
+.cover {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 130px;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.tweet-button {
+    display: inline-block;
+    width: 55px;
+    height: 21px;
+    background-image: url(http://platform.twitter.com/widgets/images/tweet.dfbf1dd98bad9f5b5addd80494650dca.png);
+    background-position: 0 0;
+}
+
+.tweet-button:hover {
+  background-position: 0 -21px;
+}
+
+.like-div {
+    width: 34px;
+    height: 30px;
+    display: inline-block;
+    line-height: 1;
+    background-color: rgb(248, 249, 250);
+    border-radius: 3px;
+}
+
+.like-div:hover {
+    cursor: pointer;
+    background-color: rgb(226, 230, 234);
+    -webkit-transition: background-color 0.1s linear;
+    -ms-transition: background-color 0.1s linear;
+    -moz-transition: background-color 0.1s ease-in;
+    -o-transition: background-color 0.1s ease-in;
+    transition: background-color 0.1s linear;
+}
+
+.like {
+    width: 12px;
+    height: 12px;
+}
+
+.like:before {
+    content: "\e143";
+    font-family: "Glyphicons Halflings";
+    line-height: 1;
+    margin: 8px 10px;
+    display: inline-block;
+    color: black;
+}
+
+.like:hover:before {
+    content: "\e005";
+    color: red;
+}
+
+.unlike {
+    width: 12px;
+    height: 12px;
+}
+
+.unlike:before {
+    content: "\e005";
+    font-family: "Glyphicons Halflings";
+    line-height: 1;
+    margin: 8px 10px;
+    display: inline-block;
+    color: red;
+}
+
+.unlike:hover:before {
+    content: "\e143";
+    color: black;
+}
+
+.card {
+    background-color: rgb(248, 249, 250);
+    border-radius: 3px;
+}
+
+.card:hover {
+    background-color: rgb(226, 230, 234);
+}
+

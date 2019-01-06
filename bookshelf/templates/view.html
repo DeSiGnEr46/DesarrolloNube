@@ -19,33 +19,68 @@
 {% block content %}
 
 <h3>Book</h3>
-
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 <div class="btn-group">
-  <a href="/books/{{book.id}}/edit" class="btn btn-primary btn-sm">
-    <i class="glyphicon glyphicon-edit"></i>
-    Edit book
-  </a>
-  <a href="/books/{{book.id}}/delete" class="btn btn-danger btn-sm">
-    <i class="glyphicon glyphicon-trash"></i>
-    Delete book
-  </a>
+<!-- logged user -->
+  {% if isPublisher == True %}
+    <a href="/books/{{book.id}}/edit" class="btn btn-primary btn-sm">
+      <i class="glyphicon glyphicon-edit"></i>
+      Edit book
+    </a>
+    <a href="/books/{{book.id}}/delete" class="btn btn-danger btn-sm">
+      <i class="glyphicon glyphicon-trash"></i>
+      Delete book
+    </a>
+  {% endif %}
+  {% if isPublisher == False %}
+    {% if showLike %}
+      <div class="like-div">
+        <a href="/books/{{book.id}}/like" class="like" title="Like this book"></a>
+      </div>
+    {% else %}
+      <div class="like-div">
+        <a href="/books/{{book.id}}/unlike" class="unlike" title="Unlike"></a>
+      </div>
+    {% endif %}
+    {% if bought == False %}
+      <a href="/books/{{book.id}}/buy" class="btn btn-success btn-sm">
+        <i class="glyphicon glyphicon-usd"></i>
+        Buy this book
+      </a>
+    {% endif %}
+  {% endif %}
 </div>
 
 <div class="media">
   <div class="media-left">
-    <img class="book-image" src="http://placekitten.com/g/128/192">
+    <img class="book-image cover" src="{{book.cover}}">
   </div>
   <div class="media-body">
     <h4 class="book-title">
-      {{book.title}}
-      <small>{{book.publishedDate}}</small>
+      {{book.title}}<br/>
+      <small>{{book.publishedDate}}</small><br/>
+      <small>Published by {{book.publishedBy['name']}}</small>
     </h4>
-    <h5 class="book-author">By {{book.author|default('Unknown', True)}}</h5>
+    <h5 class="book-author">Written by {{book.author|default('Unknown', True)}}</h5>
+    {% if book.price is not none %}
+      <p><strong>Price: </strong>{{ book.price }}</p>
+    {% endif %}
+    {% if book.likes is not none and book.likes > 0 %}
+      <p>This book was liked <strong>{{ book.likes }} times!</strong></p>
+    {% endif %}
     <p class="book-description">{{book.description}}</p>
   </div>
   <div class="page-list">
     {% for page in pages %}
-    <div>  
+    <div>
       <a href="/books/{{book.id}}/{{page.id}}">Page {{page.order}}</a> 
     </div>
     {% else %}
@@ -58,6 +93,26 @@
       New Page
     </a>
   </div>
+</div>
+
+<div class="media">
+    <a class="twitter-share-button tweet-button"
+      href="https://twitter.com/intent/tweet?text=Check%20out%20this%20amazing%20book!"
+      data-size="large"
+      data-text="Check out this amazing book!"
+      data-url="https://twitter.com/intent/tweet?text=Check%20out%20this%20amazing%20book!"
+      data-hashtags="example,demo"
+      data-via="twitterdev"
+      data-related="twitterapi,twitter">
+    Tweet
+    </a>
+    <div class="fb-like" 
+        data-href="{{self._TemplateReference__context.request.url}}"
+        data-layout="standard" data-action="like"
+        data-size="small"
+        data-show-faces="true"
+        data-share="true">
+    </div>
 </div>
 
 {% endblock %}

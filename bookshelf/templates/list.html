@@ -18,6 +18,12 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../static/css/style.css" rel="stylesheet">
+
 <h3>Books</h3>
 <a href="/books/add" class="btn btn-success btn-sm">
   <i class="glyphicon glyphicon-plus"></i>
@@ -25,14 +31,14 @@
 </a>
 
 {% for book in books %}
-<div class="media">
-  <a href="/books/{{book.id}}">
-    <div class="media-left">
-      <img src="http://placekitten.com/g/128/192">
+<div class="media card">
+  <a href="/books/{{book[0].id}}">
+    <div class="media-left">    
+      <img class="cover" src="{{ book[1] }}">
     </div>
     <div class="media-body">
-      <h4>{{book.title}}</h4>
-      <p>{{book.author}}</p>
+      <h4>{{book[0].title}}</h4>
+      <p>{{book[0].author}}</p>
     </div>
   </a>
 </div>
@@ -49,7 +55,7 @@
 {% endif %}
 
 </br></br></br>
-<!--JUST EXPERIMENTING
+JUST EXPERIMENTING
 {% for user in users %}
 <div class="media">
   <a href="/user/{{user.id}}">
@@ -61,7 +67,8 @@
 </div>
 {% else %}
 <p>No users found</p>
-{% endfor %}-->
+{% endfor %}
+</br></br></br>
 
 {% if next_page_token2 %}
 <nav>
@@ -69,6 +76,7 @@
     <li><a href="?page_token={{next_page_token2}}">More</a></li>
   </ul>
 </nav>
+</br></br></br>
 {% endif %}
 
 {% endblock %}

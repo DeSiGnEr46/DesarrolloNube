@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bookshelf import get_model, cryptography
+from bookshelf import get_model#, cryptography
 from flask import Blueprint, redirect, render_template, request, url_for, flash, session
 from wtforms import Form, TextField, PasswordField, validators, StringField, SubmitField
 import os
@@ -132,7 +132,46 @@ def signup():
 def view_user(id):
     global user_info
     user = get_model().read_user(id)
-    return render_template("user.html", user=user, user_info=user_info)
+    list = request.args.get('list')
+    list = int(list) if list is not None else None
+    
+    books_with_covers = []
+    next_page_token = None
+    sales = []
+    
+    if list > 0 and list < 4:
+        token = request.args.get('page_token', None)
+        if token:
+            token = token.encode('utf-8')
+    
+        books, next_page_token = get_model().list_comic(cursor=token, list=list, user_id=id)
+        books_with_covers = []
+        
+        for book in books:
+            cover = get_model().get_cover(book['id'])
+            book = tuple((book, cover))
+            books_with_covers.append(book)
+    elif list == 4:
+        payments = get_model().list_sold_comics(id)
+        sales = []
+        for payment in payments:
+            buyer = get_model().read_user(payment['buyer_id'])
+            comic = get_model().read_comic(payment['comic_id'])
+            sale = {
+                'price': payment['price'],
+                'date': payment['date'],
+                'title': comic['title'],
+                'buyer': buyer['name']
+                }
+            sales.append(sale)
+    
+    return render_template("user.html",
+        user=user,
+        list=list,
+        books=books_with_covers,
+        next_page_token=next_page_token,
+        sales=sales,
+        user_info=user_info)
 
 
 # [START add]
@@ -159,7 +198,7 @@ def edit_user(id):
 
         user = get_model().update_user(data, id)
 
-        return redirect(url_for('crud.list'))
+        return redirect(url_for('view_user', id=id))
 
     return render_template("user_form.html", action="Edit user", user=user, user_info=user_info)
 
@@ -168,4 +207,23 @@ def edit_user(id):
 def delete(id):
     get_model().delete_user(id)
     return redirect(url_for('crud.list'))
+
+@user.route('/<id>/liked')
+def list_liked(id):
+    return redirect(url_for(".view_user", id=id, list=1))
+
+
+@user.route('/<id>/bought')
+def list_bought(id):
+    return redirect(url_for(".view_user", id=id, list=2))
+
+
+@user.route('/<id>/published')
+def list_published(id):
+    return redirect(url_for(".view_user", id=id, list=3))
+
+
+@user.route('/<id>/sales')
+def list_sales(id):
+    return redirect(url_for(".view_user", id=id, list=4))
 
