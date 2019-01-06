@@ -17,10 +17,9 @@ from flask import Blueprint, redirect, render_template, request, url_for, flash
 from werkzeug.utils import secure_filename
 from . import flickr_handler
 import datetime
-
+import bookshelf.user
 
 crud = Blueprint('crud', __name__)
-
 
 # [START list]
 @crud.route("/")
@@ -34,12 +33,14 @@ def list():
     # experimenting
     users, next_page_token2 = get_model().list_user(cursor=token)
 
+    #print(bookshelf.user.user_info)
     return render_template(
         "list.html",
         books=books,
         users=users,
         next_page_token=next_page_token,
-        next_page_token2=next_page_token2)
+        next_page_token2=next_page_token2,
+        user_info=bookshelf.user.user_info) 
 # [END list]
 
 
@@ -48,7 +49,7 @@ def view(id):
     book = get_model().read_comic(id)
     pages, next_page_token = get_model().list_pages(id)
         
-    return render_template("view.html", book=book, pages=pages)
+    return render_template("view.html", book=book, pages=pages, user_info=bookshelf.user.user_info)
 
 @crud.route('/<comic_id>/<page_id>')
 def view_page(comic_id,page_id):
@@ -58,7 +59,7 @@ def view_page(comic_id,page_id):
         next["_id"] = next["id"]
     if(prev):
         prev["_id"] = prev["id"]
-    return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages)
+    return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages,user_info=bookshelf.user.user_info)
 
 
 ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg'])
@@ -90,7 +91,7 @@ def new_page(id):
             return redirect(url_for('.view', id=id))
 
 
-    return render_template("new_page.html", action="New", book=book)
+    return render_template("new_page.html", action="New", book=book, user_info=bookshelf.user.user_info)
 # [END new_page]
 
 # [START add]
@@ -105,7 +106,7 @@ def add():
 
         return redirect(url_for('.view', id=book['id']))
 
-    return render_template("form.html", action="Add", book={})
+    return render_template("form.html", action="Add", book={}, user_info=bookshelf.user.user_info)
 # [END add]
 
 
@@ -120,7 +121,7 @@ def edit(id):
 
         return redirect(url_for('.view', id=book['id']))
 
-    return render_template("form.html", action="Edit", book=book)
+    return render_template("form.html", action="Edit", book=book, user_info=bookshelf.user.user_info)
 
 
 @crud.route('/<id>/delete')
@@ -144,4 +145,4 @@ def search():
     print(tags)
 
     #return redirect(url_for('.list'))
-    return render_template('search_results.html', users=users, authors=authors, titles=titles, tags=tags)
+    return render_template('search_results.html', users=users, authors=authors, titles=titles, tags=tags, user_info=bookshelf.user.user_info)

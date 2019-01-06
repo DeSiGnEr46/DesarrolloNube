@@ -37,17 +37,21 @@
         <li class="nav-item">
           <a class="nav-link" href="/books"> Home </a>
         </li>
+        {% if user_info['log'] == False %}
         <li class="nav-item">
           <a class="nav-link" href="/user/login">Login</a>
         </li>
-        <!-- {% if user == False and self._TemplateReference__context.name != 'login.html' %}
-               <a href="/login">Login</a>
-             {% elif user %}
-               <a href="/user/{{ user.id }}">{{ user.name }} {{ user.surname }}</a>
-             {% endif %}-->
+        {% elif user_info['log'] %}
+        <li class="nav-item">
+          <a class="nav-link" href="/user/{{user_info['id']}}"> Profile </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/logout"> Log out </a>
+        </li>
+        {% endif %}
       </ul>
       <form action="/books/search" method="POST" role="form" class="form-inline my-2 my-lg-0" style="float: right;">
-        <input class="form-control mr-sm-2" name="chain" type="search" placeholder="Search" >
+        <input class="form-control mr-sm-2" name="chain" type="search" placeholder="Search">
         <button class="btn btn-success my-2 my-sm-0" type="submit">Search</button>
       </form>
     </div>

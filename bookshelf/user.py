@@ -21,7 +21,7 @@ from bson.objectid import ObjectId
 user = Blueprint('user', __name__)
 
 # Variable to check logged user
-log_user = None
+user_info = {'log': False, 'id': None}
 
 ## Classes for the forms
 class LoginForm(Form):
@@ -43,23 +43,20 @@ class SearchForm(Form):
 #Function called before accessing any protected function
 @user.before_request
 def before_request():
-    global log_user 
-    log_user = None
+    global user_info
 
     if 'user' in session:
-        log_user = session['user']
-    else:
-        redirect(url_for("crud.list"))
-
-    
-    
+        user_info = session['user']
+        print(user_info)
+        print("Before!")
 
 @user.route('/login', methods=['GET','POST'])
 def login():
-    global log_user
-    
-    if log_user is not None:
-        return redirect(url_for("crud.list"))
+    global user_info
+    print(user_info['id'])
+
+    if user_info['id'] is not None:
+        return redirect(url_for('crud.list'))
 
     form = LoginForm(request.form)
  
@@ -67,26 +64,30 @@ def login():
         if form.validate():
             # Log valid
             result = get_model().find_user_email(request.form['email'])
+            print(result)
             if result is None:
-                flash("Email is not valid. ")
+                flash("Email is not valid.")
             
             elif not cryptography.check_pass(request.form['password'], result['password']):
                 flash("Password is incorrect")
             
             else:
-                session['user'] = request.form['email']
+                session['user'] = {'log': True, 'id': result['id']}
+                user_info = session['user']
                 print(session)
                 print(session['user'])
                 return redirect(url_for('crud.list'))
 
         else:
             flash('All the form fields are required. ')
- 
-    return render_template('login.html', form=form)
+    
+    return render_template('login.html', form=form, user_info=user_info)
 
 # Logout function
 @user.route('/logout')
 def logout():
+    global user_info
+    user_info = {'log': False, 'id': None}
     session.pop('user', None)
     return redirect(url_for('crud.list'))
 
@@ -100,6 +101,7 @@ def check_session():
 # Register function
 @user.route('/signup', methods=['GET','POST'])
 def signup():
+    global user_info
     form = RegisterForm(request.form)
  
     if request.method == 'POST':
@@ -116,14 +118,15 @@ def signup():
         else:
             flash('All the form fields are required.')
 
-    return render_template('signup.html', form=form)
+    return render_template('signup.html', form=form, user_info=user_info)
 
 
 ## [END Users Log Logic]
 @user.route('/<id>')
 def view_user(id):
+    global user_info
     user = get_model().read_user(id)
-    return render_template("user.html", user=user)
+    return render_template("user.html", user=user, user_info=user_info)
 
 
 # [START add]
@@ -142,6 +145,7 @@ def add_user():
 
 @user.route('/<id>/edit', methods=['GET', 'POST'])
 def edit_user(id):
+    global user_info
     user = get_model().read_user(id)
 
     if request.method == 'POST':
@@ -151,7 +155,7 @@ def edit_user(id):
 
         return redirect(url_for('crud.list'))
 
-    return render_template("user_form.html", action="Edit user", user=user)
+    return render_template("user_form.html", action="Edit user", user=user, user_info=user_info)
 
 
 @user.route('/<id>/delete')
