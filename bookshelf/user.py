@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bookshelf import get_model#, cryptography
+from bookshelf import get_model, cryptography
 from flask import Blueprint, redirect, render_template, request, url_for, flash, session
 from wtforms import Form, TextField, PasswordField, validators, StringField, SubmitField
 import os
