@@ -106,15 +106,21 @@ def signup():
  
     if request.method == 'POST':
         if form.validate():
-            # Register successfully
-            # We add the user to the database
-            data = {}
-            data['name'] = request.form['name']
-            data['email'] = request.form['email']
-            data['password'] = cryptography.encrypt_pass(request.form['pass1'])
-            result = get_model().create_user(data)
+            #Checks if the email is already in use
+            result = get_model().find_user_email(request.form['email'])
             print(result)
-            return redirect(url_for('user.login'))
+            if result is not None:
+                flash('Email is already registered.')
+            else:
+                # Register successfully
+                # We add the user to the database
+                data = {}
+                data['name'] = request.form['name']
+                data['email'] = request.form['email']
+                data['password'] = cryptography.encrypt_pass(request.form['pass1'])
+                result = get_model().create_user(data)
+                print(result)
+                return redirect(url_for('user.login'))
         else:
             flash('All the form fields are required.')
 

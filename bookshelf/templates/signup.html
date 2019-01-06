@@ -29,6 +29,10 @@
             <div class="alert alert-warning">
                 <strong> Warning </strong> {{ message[1] }}</div>
             {% endif %}
+            {% if "Email" in message[1]: %}
+            <div class="alert alert-warning">
+                <strong> Warning </strong> {{ message[1] }}</div>
+            {% endif %}
             {% endfor %}
             {% endif %}
             {% endwith %}
