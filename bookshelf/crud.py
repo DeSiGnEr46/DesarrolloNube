@@ -19,7 +19,7 @@ from . import flickr_handler
 import datetime
 import bookshelf.user
 from bson.objectid import ObjectId
-from mhlib import isnumeric
+#from mhlib import isnumeric
 
 crud = Blueprint('crud', __name__)
 
@@ -81,6 +81,11 @@ def view(id):
 
 @crud.route('/<comic_id>/<page_id>')
 def view_page(comic_id,page_id):
+
+    # If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
     page = get_model().read_page(comic_id,page_id)
     next, prev, pages = get_model().contiguos_page(comic_id,page_id) 
     if(next):
@@ -99,7 +104,17 @@ def allowed_file(filename):
 # [START new_page]
 @crud.route('<id>/new_page', methods=['GET', 'POST'])
 def new_page(id):
+
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('crud.list'))
+
     book = get_model().read_comic(id)
+
+    #If the user is not the publisher, redirect to main page
+    # If the user is not logged, redirect to login
+    if bookshelf.user.user_info['id'] != book['publishedBy']:
+        return redirect(url_for('user.login'))
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
@@ -125,13 +140,17 @@ def new_page(id):
 # [START add]
 @crud.route('/add', methods=['GET', 'POST'])
 def add():
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
         data['tags'] = data['tags'].split(',')
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
         data['likes'] = 0
         data['publishedBy'] = bookshelf.user.user_info['id']
-        data['price'] = abs(float(data['price'])) if isnumeric(data['price']) == True else 0
+        data['price'] = abs(float(data['price'])) #if isnumeric(data['price']) == True else 0
 
         book = get_model().create_comic(data)
 
@@ -143,7 +162,16 @@ def add():
 
 @crud.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
     book = get_model().read_comic(id)
+
+    #If the user is not the publisher, redirect to main page
+    # If the user is not logged, redirect to login
+    if bookshelf.user.user_info['id'] != book['publishedBy']:
+        return redirect(url_for('user.login'))
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
@@ -157,6 +185,18 @@ def edit(id):
 
 @crud.route('/<id>/delete')
 def delete(id):
+
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
+    book = get_model().read_comic(id)
+
+    #If the user is not the publisher, redirect to main page
+    # If the user is not logged, redirect to login
+    if bookshelf.user.user_info['id'] != book['publishedBy']:
+        return redirect(url_for('user.login'))
+
     get_model().delete_comic(id)
     return redirect(url_for('.list'))
 
@@ -181,18 +221,30 @@ def search():
 
 @crud.route('/<id>/like')
 def like(id):
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
     like = get_model().like(bookshelf.user.user_info['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/unlike')
 def unlike(id):
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+
     get_model().unlike(bookshelf.user.user_info['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/buy')
 def buy(id):
+    #If the user is not logged, redirect to login
+    if bookshelf.user.user_info['log'] == False:
+        return redirect(url_for('user.login'))
+        
     if get_model().buy(bookshelf.user.user_info['id'], id) == False:
         flash('Not enough money')
     return redirect(url_for('.view', id=id))

@@ -15,7 +15,7 @@
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
 import datetime
-from mhlib import isnumeric
+#from mhlib import isnumeric
 
 
 builtin_list = list
@@ -102,7 +102,8 @@ def update_comic(data, id):
         {'$set': {
             'title': data['title'],
             'author': data['author'],
-            'price': abs(float(data['price'])) if isnumeric(data['price']) == True else 0,
+            #'price': abs(float(data['price'])) if isnumeric(data['price']) == True else 0,
+            'price' : abs(float(data['price'])),
             'tags': data['tags']
         }})
     return read_comic(id)
@@ -236,6 +237,11 @@ def find_user_name(name):
     result = mongo.db.users.find({'name': name}, limit=10)
     result = builtin_list(map(from_mongo, result))
     return result
+
+def find_publications(id):
+    result = mongo.db.comics.find({'publishedBy':id})
+    result = builtin_list(map(from_mongo, result))
+    return result 
 
 ## ENDS USERS
 

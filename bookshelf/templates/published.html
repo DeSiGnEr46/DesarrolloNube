@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for publication in publications %}
+<div class="media card">
+  <a href="/books/{{publication.id}}">
+    <div class="media-left">    
+      <!--<img class="cover" src="{{ publication.id }}">-->
+    </div>
+    <div class="media-body">
+      <h4>{{publication.title}}</h4>
+      <p>{{publication.author}}</p>
+    </div>
+  </a>
+</div>
+{% else %}
+<p>No books found</p>
+{% endfor %}
+
+{% endblock %}

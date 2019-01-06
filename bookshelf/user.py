@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bookshelf import get_model#, cryptography
+from bookshelf import get_model, cryptography
 from flask import Blueprint, redirect, render_template, request, url_for, flash, session
 from wtforms import Form, TextField, PasswordField, validators, StringField, SubmitField
 import os
@@ -91,17 +91,14 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('crud.list'))
 
-# Check if the user is logged in
-@user.route('/cheksess')
-def check_session():
-    if 'user' in session:
-        return session['user']
-    return None
-
 # Register function
 @user.route('/signup', methods=['GET','POST'])
 def signup():
+
     global user_info
+    if user_info['id'] is not None:
+        return redirect(url_for('crud.list'))
+
     form = RegisterForm(request.form)
  
     if request.method == 'POST':
@@ -132,8 +129,19 @@ def signup():
 def view_user(id):
     global user_info
     user = get_model().read_user(id)
+
+    #If the user is not logged, redirect to main page
+    if user_info['id'] is None:
+        return redirect(url_for('crud.list'))
+
+    #If the user is trying to access the profile of another user, redirect to main page
+    print(user['id'])
+    print(user_info['id'])
+    if user_info['id'] != user['id']:
+        return redirect(url_for('crud.list'))
+
     list = request.args.get('list')
-    list = int(list) if list is not None else None
+    list = int(list) if list is not None else 0
     
     books_with_covers = []
     next_page_token = None
@@ -174,37 +182,42 @@ def view_user(id):
         user_info=user_info)
 
 
-# [START add]
-@user.route('/add', methods=['GET', 'POST'])
-def add_user():
-    if request.method == 'POST':
-        data = request.form.to_dict(flat=True)
-
-        user = get_model().create_user(data)
-
-        return redirect(url_for('crud.list'))
-
-    return render_template("user_form.html", action="Create new user", user={})
-# [END add]
-
-
 @user.route('/<id>/edit', methods=['GET', 'POST'])
 def edit_user(id):
     global user_info
     user = get_model().read_user(id)
+
+    #If the user is not logged, redirect to main page
+    if user_info['id'] is None:
+        return redirect(url_for('crud.list'))
+
+    #If the user is trying to access the profile of another user, redirect to main page
+    if user_info['id'] != user['id']:
+        return redirect(url_for('crud.list'))
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
 
         user = get_model().update_user(data, id)
 
-        return redirect(url_for('view_user', id=id))
+        return redirect(url_for('user.view_user', id=id))
 
     return render_template("user_form.html", action="Edit user", user=user, user_info=user_info)
 
 
 @user.route('/<id>/delete')
 def delete(id):
+    global user_info
+    user = get_model().read_user(id)
+
+    #If the user is not logged, redirect to main page
+    if user_info['id'] is None:
+        return redirect(url_for('crud.list'))
+
+    #If the user is trying to access the profile of another user, redirect to main page
+    if user_info['id'] != user['id']:
+        return redirect(url_for('crud.list'))
+
     get_model().delete_user(id)
     return redirect(url_for('crud.list'))
 
@@ -226,4 +239,11 @@ def list_published(id):
 @user.route('/<id>/sales')
 def list_sales(id):
     return redirect(url_for(".view_user", id=id, list=4))
+
+@user.route('/publications/<id>')
+def publications(id):
+    global user_info
+    publications = get_model().find_publications(id)
+    return render_template('published.html', publications=publications, user_info=user_info)
+
 
