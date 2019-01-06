@@ -14,6 +14,10 @@
     <label for="title">Email</label>
     <input type="email" name="email" id="title" value="{{ user.email }}" class="form-control"/>
   </div>
+  <div class="form-group">
+    <label for="title">Balance</label>
+    <input type="number" name="balance" id="title" value="{{ user.balance }}" min="0" step="any" class="form-control"/>
+  </div>
 
   <button type="submit" class="btn btn-success">Save</button>
 </form>

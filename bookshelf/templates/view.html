@@ -100,7 +100,7 @@
         </a>
       </div>
       {% if user_info['log'] == True or price == 0 %}
-        {% isPublisher == True or bought == True %}
+        {% if isPublisher == True or bought == True %}
           <div class="page-list" style="margin-top: 10px;">
             {% for page in pages %}
             <div>

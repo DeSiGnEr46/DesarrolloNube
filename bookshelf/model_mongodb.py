@@ -220,7 +220,8 @@ def update_user(data, id):
     mongo.db.users.update_one({'_id': _id(id)},
         {'$set': {
             'name': data['name'],
-            'email': data['email']
+            'email': data['email'],
+            'balance': data['balance']
         }})
     return read_user(id)
 # [END update]
