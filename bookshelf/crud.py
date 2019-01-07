@@ -206,17 +206,35 @@ def search():
     cadena = request.form['chain']
     
     #Make the requests
+    # Search for users
     users = get_model().find_user_name(cadena)
     print(users)
+
+    #Search for authors
     authors = get_model().search_author(cadena)
     print(authors)
+    
+    #Search for book titles
     titles = get_model().search_title(cadena)
-    print(titles)
+    titles_with_cover = []
+    for book in titles:
+        cover = get_model().get_cover(book['id'])
+        book = tuple((book, cover))
+        titles_with_cover.append(book)
+
+    print(titles_with_cover)
+
+    #Search for book tags
     tags = get_model().search_tags(cadena)
-    print(tags)
+    tags_with_cover = []
+    for book in tags:
+        cover = get_model().get_cover(book['id'])
+        book = tuple((book, cover))
+        tags_with_cover.append(book)
+    print(tags_with_cover)
 
     #return redirect(url_for('.list'))
-    return render_template('search_results.html', users=users, authors=authors, titles=titles, tags=tags, user_info=bookshelf.user.user_info)
+    return render_template('search_results.html', users=users, authors=authors, titles=titles_with_cover, tags=tags_with_cover, user_info=bookshelf.user.user_info)
 
 
 @crud.route('/<id>/like')

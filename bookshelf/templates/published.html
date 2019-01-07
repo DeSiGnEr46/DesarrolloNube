@@ -2,15 +2,17 @@
 
 {% block content %}
 
+<h3>Publications</h3>
+<hr>
 {% for publication in publications %}
-<div class="media card">
-  <a href="/books/{{publication.id}}">
+<div class="media">
+  <a href="/books/{{publication[0].id}}">
     <div class="media-left">    
-      <!--<img class="cover" src="{{ publication.id }}">-->
+      <img style="width: 130px;" src="{{ publication[1] }}"> <!-- Can't apply "cover" class correctyle. Don't know why.-->
     </div>
     <div class="media-body">
-      <h4>{{publication.title}}</h4>
-      <p>{{publication.author}}</p>
+      <h4>{{publication[0].title}}</h4>
+      <p>{{publication[0].author}}</p>
     </div>
   </a>
 </div>

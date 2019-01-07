@@ -244,7 +244,14 @@ def list_sales(id):
 @user.route('/publications/<id>')
 def publications(id):
     global user_info
+    
     publications = get_model().find_publications(id)
-    return render_template('published.html', publications=publications, user_info=user_info)
+    publications_with_cover = []
+    for book in publications:
+        cover = get_model().get_cover(book['id'])
+        book = tuple((book, cover))
+        publications_with_cover.append(book)
+
+    return render_template('published.html', publications=publications_with_cover, user_info=user_info)
 
 
