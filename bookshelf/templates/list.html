@@ -40,7 +40,11 @@
     </div>
     <div class="media-body">
       <h4>{{book[0].title}}</h4>
-      <p>{{book[0].author}}</p>
+      <p>Written by {{book[0].author}}</p>
+      {% if book[0].price == 0 %}
+        <br/>
+        <p>FREE</p>
+      {% endif %}
     </div>
   </a>
 </div>

@@ -114,6 +114,7 @@ def signup():
                 data = {}
                 data['name'] = request.form['name']
                 data['email'] = request.form['email']
+                data['balance'] = 0
                 data['password'] = cryptography.encrypt_pass(request.form['pass1'])
                 result = get_model().create_user(data)
                 print(result)
@@ -197,7 +198,7 @@ def edit_user(id):
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-
+        
         user = get_model().update_user(data, id)
 
         return redirect(url_for('user.view_user', id=id))

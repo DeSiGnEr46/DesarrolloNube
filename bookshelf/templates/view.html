@@ -72,7 +72,7 @@
       <h4 class="book-title">
         {{book.title}}<br/>
         <small>{{book.publishedDate}}</small><br/>
-        <small>Published by {{book.publishedBy['name']}}</small>
+        <small>Uploaded by {{book.publishedBy['name']}}</small>
       </h4>
       <h5 class="book-author">Written by {{book.author|default('Unknown', True)}}</h5>
       {% if book.price is not none and price > 0 %}
@@ -99,8 +99,10 @@
           Show Info
         </a>
       </div>
-      {% if user_info['log'] == True or price == 0 %}
-        {% if isPublisher == True or bought == True %}
+      {% if not pages %}
+        <p style="text-align: center; margin: 30px">No pages found</p>
+      {% elif user_info['log'] == True %}
+        {% if isPublisher == True or bought == True or book.price == 0 %}
           <div class="page-list" style="margin-top: 10px;">
             {% for page in pages %}
             <div>

@@ -221,7 +221,7 @@ def update_user(data, id):
         {'$set': {
             'name': data['name'],
             'email': data['email'],
-            'balance': data['balance']
+            'balance': int(data['balance']) if data['balance'] != '' else 0
         }})
     return read_user(id)
 # [END update]
