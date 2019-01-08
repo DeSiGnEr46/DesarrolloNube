@@ -21,7 +21,7 @@ from bson.objectid import ObjectId
 user = Blueprint('user', __name__)
 
 # Variable to check logged user
-user_info = {'log': False, 'id': None}
+user_info = {'log': False, 'id': None, 'name': None}
 
 ## Classes for the forms
 class LoginForm(Form):
@@ -49,6 +49,8 @@ def before_request():
         user_info = session['user']
         print(user_info)
         print("Before!")
+    else:
+        user_info = {'log': False, 'id': None, 'name': None}
 
 @user.route('/login', methods=['GET','POST'])
 def login():
@@ -87,7 +89,7 @@ def login():
 @user.route('/logout')
 def logout():
     global user_info
-    user_info = {'log': False, 'id': None}
+    user_info = {'log': False, 'id': None, 'name': None }
     session.pop('user', None)
     return redirect(url_for('crud.list'))
 

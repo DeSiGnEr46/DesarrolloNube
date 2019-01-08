@@ -14,7 +14,7 @@
 
 import os
 from bookshelf import get_model
-from flask import Flask, Blueprint, redirect, render_template, request, url_for, flash
+from flask import Flask, Blueprint, redirect, render_template, request, url_for, flash, session
 from werkzeug.utils import secure_filename
 from . import flickr_handler
 import datetime
@@ -22,6 +22,18 @@ import bookshelf.user
 from bson.objectid import ObjectId
 
 crud = Blueprint('crud', __name__)
+
+@crud.before_request
+def before_request():
+
+    if 'user' in session:
+        bookshelf.user.user_info = session['user']
+        print(bookshelf.user.user_info)
+        print("Before!")
+    else:
+        bookshelf.user.user_info = {'log': False, 'id': None, 'name': None}
+        print(bookshelf.user.user_info)
+        print("Before!")
 
 # [START list]
 @crud.route("/")
