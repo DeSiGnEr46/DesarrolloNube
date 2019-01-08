@@ -189,7 +189,9 @@ def edit(id):
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-
+        data['author'] = book['author']
+        data['publishedDate'] = book['publishedDate']
+        
         book = get_model().update_comic(data, id)
 
         return redirect(url_for('.view', id=book['id']))
