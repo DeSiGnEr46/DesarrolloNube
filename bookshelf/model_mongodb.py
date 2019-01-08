@@ -176,7 +176,6 @@ def read_page(comic_id,page_id):
 # [START CONTIGUOS]
 def contiguos_page(comic_id,page_id):
     pages,cursor = list_pages(comic_id)
-    pages.reverse()
     page = from_mongo(mongo.db.pages.find_one({'_id': _id(page_id)}))
     next = pages[int(page['order'])] if int(page['order'])<len(pages) else None
     prev = pages[int(page['order'])-2] if (int(page['order'])-2)>-1 else None
