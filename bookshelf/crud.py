@@ -27,12 +27,11 @@ crud = Blueprint('crud', __name__)
 def before_request():
 
     if 'user' in session:
-        bookshelf.user.user_info = session['user']
-        print(bookshelf.user.user_info)
+        print(session['user'])
         print("Before!")
     else:
-        bookshelf.user.user_info = {'log': False, 'id': None, 'name': None}
-        print(bookshelf.user.user_info)
+        session['user'] = {'log': False, 'id': None, 'name': None}
+        print(session['user'])
         print("Before!")
 
 # [START list]
@@ -50,12 +49,12 @@ def list():
         book = tuple((book, cover))
         books_with_covers.append(book)
 
-    #print(bookshelf.user.user_info)
+    #print(session['user'])
     return render_template(
         "list.html",
         books=books_with_covers,
         next_page_token=next_page_token,
-        user_info=bookshelf.user.user_info) 
+        user_info=session['user']) 
 # [END list]
 
 
@@ -71,11 +70,11 @@ def view(id):
     publishedBy = get_model().read_user(book['publishedBy'])
     book['publishedBy'] = publishedBy
     bought, showLike, isPublisher = False, False, False
-    if bookshelf.user.user_info['log'] == True:
-        bought = get_model().is_bought(bookshelf.user.user_info['id'], id)
-        like = get_model().read_like(bookshelf.user.user_info['id'], id)
+    if session['user']['log'] == True:
+        bought = get_model().is_bought(session['user']['id'], id)
+        like = get_model().read_like(session['user']['id'], id)
         showLike = True if like is None else False
-        isPublisher = True if str(publishedBy['_id']) == str(bookshelf.user.user_info['id']) else False
+        isPublisher = True if str(publishedBy['_id']) == str(session['user']['id']) else False
     
     return render_template("view.html",
         book=book,
@@ -84,7 +83,7 @@ def view(id):
         showLike=showLike,
         isPublisher=isPublisher,
         showPages=showPages,
-        user_info=bookshelf.user.user_info)
+        user_info=session['user'])
 
 
 @crud.route('/<id>/pages')
@@ -96,7 +95,7 @@ def show_pages(id):
 def view_page(comic_id,page_id):
 
     # If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
     page = get_model().read_page(comic_id,page_id)
@@ -105,7 +104,7 @@ def view_page(comic_id,page_id):
         next["_id"] = next["id"]
     if(prev):
         prev["_id"] = prev["id"]
-    return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages,user_info=bookshelf.user.user_info)
+    return render_template("page_view.html", page=page,next=next,prev=prev,book=comic_id,pages=pages,user_info=session['user'])
 
 
 ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg'])
@@ -122,14 +121,14 @@ def allowed_file(filename):
 @crud.route('<id>/new_page', methods=['GET', 'POST'])
 def new_page(id):
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('crud.list'))
 
     book = get_model().read_comic(id)
 
     #If the user is not the publisher, redirect to main page
     # If the user is not logged, redirect to login
-    if bookshelf.user.user_info['id'] != book['publishedBy']:
+    if session['user']['id'] != book['publishedBy']:
         return redirect(url_for('user.login'))
 
     data = request.form.to_dict(flat=True)
@@ -159,44 +158,44 @@ def new_page(id):
             return redirect(url_for('.view', id=id))
 
 
-    return render_template("new_page.html", action="New", book=book, user_info=bookshelf.user.user_info)
+    return render_template("new_page.html", action="New", book=book, user_info=session['user'])
 # [END new_page]
 
 # [START add]
 @crud.route('/add', methods=['GET', 'POST'])
 def add():
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        data['author'] = bookshelf.user.user_info['name']
+        data['author'] = session['user']['name']
         data['tags'] = data['tags'].split(',')
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
         data['likes'] = 0
-        data['publishedBy'] = bookshelf.user.user_info['id']
+        data['publishedBy'] = session['user']['id']
         data['price'] = abs(float(data['price'])) if data['price'].isdigit() == True else 0
 
         book = get_model().create_comic(data)
 
         return redirect(url_for('.view', id=book['id']))
 
-    return render_template("form.html", action="Add", book={}, user_info=bookshelf.user.user_info)
+    return render_template("form.html", action="Add", book={}, user_info=session['user'])
 # [END add]
 
 
 @crud.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
     book = get_model().read_comic(id)
 
     #If the user is not the publisher, redirect to main page
     # If the user is not logged, redirect to login
-    if bookshelf.user.user_info['id'] != book['publishedBy']:
+    if session['user']['id'] != book['publishedBy']:
         return redirect(url_for('user.login'))
 
     if request.method == 'POST':
@@ -208,21 +207,21 @@ def edit(id):
 
         return redirect(url_for('.view', id=book['id']))
 
-    return render_template("form.html", action="Edit", book=book, user_info=bookshelf.user.user_info)
+    return render_template("form.html", action="Edit", book=book, user_info=session['user'])
 
 
 @crud.route('/<id>/delete')
 def delete(id):
 
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
     book = get_model().read_comic(id)
 
     #If the user is not the publisher, redirect to main page
     # If the user is not logged, redirect to login
-    if bookshelf.user.user_info['id'] != book['publishedBy']:
+    if session['user']['id'] != book['publishedBy']:
         return redirect(url_for('user.login'))
 
     get_model().delete_comic(id)
@@ -262,36 +261,36 @@ def search():
     print(tags_with_cover)
 
     #return redirect(url_for('.list'))
-    return render_template('search_results.html', users=users, authors=authors, titles=titles_with_cover, tags=tags_with_cover, user_info=bookshelf.user.user_info)
+    return render_template('search_results.html', users=users, authors=authors, titles=titles_with_cover, tags=tags_with_cover, user_info=session['user'])
 
 
 @crud.route('/<id>/like')
 def like(id):
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
-    like = get_model().like(bookshelf.user.user_info['id'], id)
+    like = get_model().like(session['user']['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/unlike')
 def unlike(id):
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
 
-    get_model().unlike(bookshelf.user.user_info['id'], id)
+    get_model().unlike(session['user']['id'], id)
     return redirect(url_for('.view', id=id))
 
 
 @crud.route('/<id>/buy')
 def buy(id):
     #If the user is not logged, redirect to login
-    if bookshelf.user.user_info['log'] == False:
+    if session['user']['log'] == False:
         return redirect(url_for('user.login'))
         
-    if get_model().buy(bookshelf.user.user_info['id'], id) == False:
+    if get_model().buy(session['user']['id'], id) == False:
         flash('Not enough money')
     return redirect(url_for('.view', id=id))
 

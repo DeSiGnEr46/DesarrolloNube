@@ -20,9 +20,6 @@ from bson.objectid import ObjectId
 
 user = Blueprint('user', __name__)
 
-# Variable to check logged user
-user_info = {'log': False, 'id': None, 'name': None}
-
 ## Classes for the forms
 class LoginForm(Form):
     email = TextField('Email:', validators=[validators.required()])
@@ -43,21 +40,17 @@ class SearchForm(Form):
 #Function called before accessing any protected function
 @user.before_request
 def before_request():
-    global user_info
 
     if 'user' in session:
-        user_info = session['user']
-        print(user_info)
-        print("Before!")
+        print(session['user'])
     else:
-        user_info = {'log': False, 'id': None, 'name': None}
+        session['user'] = {'log': False, 'id': None, 'name': None}
+        print(session['user'])
 
 @user.route('/login', methods=['GET','POST'])
 def login():
-    global user_info
-    print(user_info['id'])
 
-    if user_info['id'] is not None:
+    if session['user']['id'] is not None:
         return redirect(url_for('crud.list'))
 
     form = LoginForm(request.form)
@@ -75,21 +68,17 @@ def login():
             
             else:
                 session['user'] = {'log': True, 'id': result['id'], 'name': result['name']}
-                user_info = session['user']
-                print(session)
                 print(session['user'])
                 return redirect(url_for('crud.list'))
 
         else:
             flash('All the form fields are required. ')
     
-    return render_template('login.html', form=form, user_info=user_info)
+    return render_template('login.html', form=form, user_info=session['user'])
 
 # Logout function
 @user.route('/logout')
 def logout():
-    global user_info
-    user_info = {'log': False, 'id': None, 'name': None }
     session.pop('user', None)
     return redirect(url_for('crud.list'))
 
@@ -97,8 +86,7 @@ def logout():
 @user.route('/signup', methods=['GET','POST'])
 def signup():
 
-    global user_info
-    if user_info['id'] is not None:
+    if session['user']['id'] is not None:
         return redirect(url_for('crud.list'))
 
     form = RegisterForm(request.form)
@@ -124,23 +112,20 @@ def signup():
         else:
             flash('All the form fields are required.')
 
-    return render_template('signup.html', form=form, user_info=user_info)
+    return render_template('signup.html', form=form, user_info=session['user'])
 
 
 ## [END Users Log Logic]
 @user.route('/<id>')
 def view_user(id):
-    global user_info
     user = get_model().read_user(id)
 
     #If the user is not logged, redirect to main page
-    if user_info['id'] is None:
+    if session['user']['id'] is None:
         return redirect(url_for('crud.list'))
 
     #If the user is trying to access the profile of another user, redirect to main page
-    print(user['id'])
-    print(user_info['id'])
-    if user_info['id'] != user['id']:
+    if session['user']['id'] != user['id']:
         return redirect(url_for('crud.list'))
 
     list = request.args.get('list')
@@ -182,20 +167,19 @@ def view_user(id):
         books=books_with_covers,
         next_page_token=next_page_token,
         sales=sales,
-        user_info=user_info)
+        user_info=session['user'])
 
 
 @user.route('/<id>/edit', methods=['GET', 'POST'])
 def edit_user(id):
-    global user_info
     user = get_model().read_user(id)
 
     #If the user is not logged, redirect to main page
-    if user_info['id'] is None:
+    if session['user']['id'] is None:
         return redirect(url_for('crud.list'))
 
     #If the user is trying to access the profile of another user, redirect to main page
-    if user_info['id'] != user['id']:
+    if session['user']['id'] != user['id']:
         return redirect(url_for('crud.list'))
 
     if request.method == 'POST':
@@ -205,20 +189,19 @@ def edit_user(id):
 
         return redirect(url_for('user.view_user', id=id))
 
-    return render_template("user_form.html", action="Edit user", user=user, user_info=user_info)
+    return render_template("user_form.html", action="Edit user", user=user, user_info=session['user'])
 
 
 @user.route('/<id>/delete')
 def delete(id):
-    global user_info
     user = get_model().read_user(id)
 
     #If the user is not logged, redirect to main page
-    if user_info['id'] is None:
+    if session['user']['id'] is None:
         return redirect(url_for('crud.list'))
 
     #If the user is trying to access the profile of another user, redirect to main page
-    if user_info['id'] != user['id']:
+    if session['user']['id'] != user['id']:
         return redirect(url_for('crud.list'))
 
     get_model().delete_user(id)
@@ -245,7 +228,6 @@ def list_sales(id):
 
 @user.route('/publications/<id>')
 def publications(id):
-    global user_info
     
     publications = get_model().find_publications(id)
     publications_with_cover = []
@@ -254,6 +236,6 @@ def publications(id):
         book = tuple((book, cover))
         publications_with_cover.append(book)
 
-    return render_template('published.html', publications=publications_with_cover, user_info=user_info)
+    return render_template('published.html', publications=publications_with_cover, user_info=session['user'])
 
 
