@@ -72,7 +72,7 @@ def login():
                 flash("Password is incorrect")
             
             else:
-                session['user'] = {'log': True, 'id': result['id']}
+                session['user'] = {'log': True, 'id': result['id'], 'name': result['name']}
                 user_info = session['user']
                 print(session)
                 print(session['user'])

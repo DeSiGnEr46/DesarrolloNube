@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from bookshelf import get_model
-from flask import Blueprint, redirect, render_template, request, url_for, flash
+from flask import Flask, Blueprint, redirect, render_template, request, url_for, flash
 from werkzeug.utils import secure_filename
 from . import flickr_handler
 import datetime
@@ -96,6 +97,10 @@ def view_page(comic_id,page_id):
 
 
 ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg'])
+UPLOAD_FOLDER = 'tmp/'
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -104,7 +109,6 @@ def allowed_file(filename):
 # [START new_page]
 @crud.route('<id>/new_page', methods=['GET', 'POST'])
 def new_page(id):
-
     #If the user is not logged, redirect to login
     if bookshelf.user.user_info['log'] == False:
         return redirect(url_for('crud.list'))
@@ -116,21 +120,30 @@ def new_page(id):
     if bookshelf.user.user_info['id'] != book['publishedBy']:
         return redirect(url_for('user.login'))
 
+    data = request.form.to_dict(flat=True)
+    data['comic_id'] = id
+    data['date'] = datetime.datetime.now().strftime("%d/%m/%Y")
+
     if request.method == 'POST':
-        data = request.form.to_dict(flat=True)
-        data['comic_id'] = id
-        data['date'] = datetime.datetime.now().strftime("%d/%m/%Y")
-        
-        img_path = data['url']    
-        if img_path == '':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        page_file = request.files['file']
+
+        if page_file.filename == '':
             flash('No selected file')
             return render_template("new_page.html", action="New", book=book)
-        if allowed_file(img_path):
-            filename = img_path
-            img_id, img_url = flickr_handler.upload_img(filename)
+        
+        if page_file and allowed_file(page_file.filename):
+            filename = secure_filename(page_file.filename)
+            server_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            page_file.save(server_path)
+            img_id, img_url = flickr_handler.upload_img(server_path)
             data['flickr_id'] = img_id
             data['url'] = img_url
             get_model().create_page(data)
+            os.remove(server_path)
             return redirect(url_for('.view', id=id))
 
 
@@ -146,6 +159,7 @@ def add():
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
+        data['author'] = bookshelf.user.user_info['name']
         data['tags'] = data['tags'].split(',')
         data['publishedDate'] = datetime.datetime.now().strftime("%d/%m/%Y")
         data['likes'] = 0
@@ -205,7 +219,7 @@ def delete(id):
 def search():
     cadena = request.form['chain']
     
-    #Make the requests
+    # Make the requests
     # Search for users
     users = get_model().find_user_name(cadena)
     print(users)
